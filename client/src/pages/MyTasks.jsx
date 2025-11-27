@@ -261,7 +261,7 @@ const MyTasks = () => {
                             {update.attachments.map((file, idx) => (
                               <a
                                 key={idx}
-                                href={`https://tms-bj16.onrender.com/${file.path}`}
+                                href={`http://localhost:5000/${file.path}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="attachment-link"

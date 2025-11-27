@@ -13,7 +13,7 @@ const Notifications = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'https://tms-bj16.onrender.com/api/notifications/send-reminders',
+        'http://localhost:5000/api/notifications/send-reminders',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

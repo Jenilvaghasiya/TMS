@@ -34,30 +34,9 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 const seedDatabase = require('./utils/seedDatabase');
 
-async function startServer() {
-  try {
-    // Test database connection
-    await sequelize.authenticate();
-    console.log('Database connection established');
-    
-    // Manually fix JSON columns to TEXT for older MySQL versions BEFORE sync
-    try {
-      await sequelize.query('ALTER TABLE Tasks MODIFY attachments TEXT;');
-      console.log('Tasks table updated');
-    } catch (err) {
-      console.log('Tasks table does not exist yet or already updated');
-    }
-    
-    try {
-      await sequelize.query('ALTER TABLE TaskUpdates MODIFY attachments TEXT;');
-      console.log('TaskUpdates table updated');
-    } catch (err) {
-      console.log('TaskUpdates table does not exist yet or already updated');
-    }
-    
-    // Now sync with alter disabled
-    await sequelize.sync({ alter: false });
-    console.log('Database synced');
+sequelize.sync({ alter: true })
+  .then(async () => {
+    console.log('Database connected and synced');
     
     // Seed database with initial data
     await seedDatabase();
@@ -66,10 +45,7 @@ async function startServer() {
       console.log(`Server running on port ${PORT}`);
       console.log(`API available at http://localhost:${PORT}/api`);
     });
-  } catch (err) {
+  })
+  .catch(err => {
     console.error('Database connection error:', err);
-    process.exit(1);
-  }
-}
-
-startServer();
+  });

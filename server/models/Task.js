@@ -28,15 +28,8 @@ const Task = sequelize.define('Task', {
     allowNull: false
   },
   attachments: {
-    type: DataTypes.TEXT,
-    defaultValue: '[]',
-    get() {
-      const rawValue = this.getDataValue('attachments');
-      return rawValue ? JSON.parse(rawValue) : [];
-    },
-    set(value) {
-      this.setDataValue('attachments', JSON.stringify(value || []));
-    }
+    type: DataTypes.JSON,
+    defaultValue: []
   },
   createdBy: {
     type: DataTypes.INTEGER,
