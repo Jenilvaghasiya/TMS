@@ -24,8 +24,15 @@ const TaskUpdate = sequelize.define('TaskUpdate', {
     allowNull: false
   },
   attachments: {
-    type: DataTypes.JSON,
-    defaultValue: []
+    type: DataTypes.TEXT,
+    defaultValue: '[]',
+    get() {
+      const rawValue = this.getDataValue('attachments');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('attachments', JSON.stringify(value || []));
+    }
   },
   hoursWorked: {
     type: DataTypes.DECIMAL(5, 2),
