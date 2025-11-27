@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter
+// Create transporter with timeout settings
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
@@ -8,7 +8,10 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,
+  socketTimeout: 5000
 });
 
 // Send task reminder email
