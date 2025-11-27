@@ -34,9 +34,18 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 const seedDatabase = require('./utils/seedDatabase');
 
-sequelize.sync({ alter: true })
+sequelize.sync({ alter: false })
   .then(async () => {
     console.log('Database connected and synced');
+    
+    // Manually fix JSON columns to TEXT for older MySQL versions
+    try {
+      await sequelize.query('ALTER TABLE Tasks MODIFY attachments TEXT;');
+      await sequelize.query('ALTER TABLE TaskUpdates MODIFY attachments TEXT;');
+      console.log('Database schema updated for compatibility');
+    } catch (err) {
+      console.log('Schema already updated or tables do not exist yet');
+    }
     
     // Seed database with initial data
     await seedDatabase();
