@@ -4,6 +4,11 @@ const nodemailer = require('nodemailer');
 let transporter = null;
 
 const getTransporter = () => {
+  // Check if email is properly configured
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER) {
+    throw new Error('Email service not configured');
+  }
+  
   if (!transporter) {
     transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -25,6 +30,10 @@ const getTransporter = () => {
 const sendTaskReminder = async (userEmail, userName, tasks) => {
   try {
     const transporter = getTransporter();
+    
+    if (!transporter) {
+      return { success: false, message: 'Email service not configured' };
+    }
     const taskList = tasks.map(task => `
       <tr>
         <td style="padding: 10px; border: 1px solid #ddd;">${task.title}</td>
@@ -68,7 +77,11 @@ const sendTaskReminder = async (userEmail, userName, tasks) => {
     await transporter.sendMail(mailOptions);
     return { success: true, message: 'Email sent successfully' };
   } catch (error) {
-    console.error('Email send error:', error);
+    if (error.message === 'Email service not configured') {
+      console.log('Email service not configured - skipping email');
+      return { success: false, message: 'Email service not available' };
+    }
+    console.error('Email send error:', error.message);
     return { success: false, message: error.message };
   }
 };
@@ -77,6 +90,11 @@ const sendTaskReminder = async (userEmail, userName, tasks) => {
 const sendDailyReport = async (userEmail, userName, stats) => {
   try {
     const transporter = getTransporter();
+    
+    if (!transporter) {
+      return { success: false, message: 'Email service not configured' };
+    }
+    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: userEmail,
@@ -105,7 +123,7 @@ const sendDailyReport = async (userEmail, userName, stats) => {
             </div>
           </div>
           
-          <a href="http://localhost:3000/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">View Tasks</a>
+          <a href="https://tms-bj16.onrender.com/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">View Tasks</a>
           
           <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated report. Please do not reply to this email.</p>
         </div>
@@ -115,7 +133,11 @@ const sendDailyReport = async (userEmail, userName, stats) => {
     await transporter.sendMail(mailOptions);
     return { success: true, message: 'Report sent successfully' };
   } catch (error) {
-    console.error('Email send error:', error);
+    if (error.message === 'Email service not configured') {
+      console.log('Email service not configured - skipping email');
+      return { success: false, message: 'Email service not available' };
+    }
+    console.error('Email send error:', error.message);
     return { success: false, message: error.message };
   }
 };
@@ -124,6 +146,11 @@ const sendDailyReport = async (userEmail, userName, stats) => {
 const sendWeeklyReport = async (userEmail, userName, stats) => {
   try {
     const transporter = getTransporter();
+    
+    if (!transporter) {
+      return { success: false, message: 'Email service not configured' };
+    }
+    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: userEmail,
@@ -152,7 +179,7 @@ const sendWeeklyReport = async (userEmail, userName, stats) => {
             </div>
           </div>
           
-          <a href="http://localhost:3000/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">View Tasks</a>
+          <a href="https://tms-bj16.onrender.com/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">View Tasks</a>
           
           <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated report. Please do not reply to this email.</p>
         </div>
@@ -162,7 +189,11 @@ const sendWeeklyReport = async (userEmail, userName, stats) => {
     await transporter.sendMail(mailOptions);
     return { success: true, message: 'Weekly report sent successfully' };
   } catch (error) {
-    console.error('Email send error:', error);
+    if (error.message === 'Email service not configured') {
+      console.log('Email service not configured - skipping email');
+      return { success: false, message: 'Email service not available' };
+    }
+    console.error('Email send error:', error.message);
     return { success: false, message: error.message };
   }
 };
