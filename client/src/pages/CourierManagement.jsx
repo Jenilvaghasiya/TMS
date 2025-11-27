@@ -51,6 +51,11 @@ const CourierManagement = () => {
       return;
     }
 
+    if (!editingCourier && (!formData.trackingNumber || formData.trackingNumber.trim().length < 3)) {
+      toast.error('Tracking number is required (minimum 3 characters)');
+      return;
+    }
+
     try {
       if (editingCourier) {
         const response = await courierAPI.update(editingCourier.id, formData);
@@ -225,30 +230,21 @@ const CourierManagement = () => {
                   required
                 />
               </div>
-              {editingCourier && (
-                <div className="form-group">
-                  <label>Tracking Number (Auto-generated)</label>
-                  <input
-                    type="text"
-                    value={formData.trackingNumber}
-                    disabled
-                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                  />
-                  <small style={{ color: '#6b7280' }}>Tracking number is automatically generated and cannot be changed</small>
-                </div>
-              )}
-              {!editingCourier && (
-                <div className="info-box" style={{ 
-                  padding: '12px', 
-                  backgroundColor: '#dbeafe', 
-                  borderRadius: '6px', 
-                  marginBottom: '15px',
-                  fontSize: '14px',
-                  color: '#1e40af'
-                }}>
-                  ℹ️ Tracking number will be automatically generated after creation
-                </div>
-              )}
+              <div className="form-group">
+                <label>Tracking Number</label>
+                <input
+                  type="text"
+                  value={formData.trackingNumber}
+                  onChange={(e) => setFormData({ ...formData, trackingNumber: e.target.value })}
+                  placeholder="Enter tracking number"
+                  required={!editingCourier}
+                  disabled={editingCourier}
+                  style={editingCourier ? { backgroundColor: '#f3f4f6', cursor: 'not-allowed' } : {}}
+                />
+                {editingCourier && (
+                  <small style={{ color: '#6b7280' }}>Tracking number cannot be changed after creation</small>
+                )}
+              </div>
               <div className="form-group">
                 <label>Remarks</label>
                 <textarea

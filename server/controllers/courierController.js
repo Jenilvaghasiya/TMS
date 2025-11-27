@@ -6,40 +6,43 @@ exports.createCourier = async (req, res) => {
   try {
     const { senderName, receiverName, courierType, trackingNumber, remarks, status } = req.body;
 
-    // Validate input
-    const courierData = {
-      senderName,
-      receiverName,
-      courierType,
-      trackingNumber,
-      status: status || 'Received'
-    };
-    
-    const errors = validateCourierData(courierData);
-    if (errors.length > 0) {
-      return res.status(400).json({ message: errors.join(', ') });
+    // Basic validation
+    if (!senderName || senderName.trim().length < 2 || senderName.trim().length > 50) {
+      return res.status(400).json({ message: 'Sender name must be 2-50 characters' });
     }
 
-    // Check if tracking number already exists (if provided)
-    if (trackingNumber) {
-      const existing = await Courier.findOne({ where: { trackingNumber } });
-      if (existing) {
-        return res.status(400).json({ message: 'Tracking number already exists' });
-      }
+    if (!receiverName || receiverName.trim().length < 2 || receiverName.trim().length > 50) {
+      return res.status(400).json({ message: 'Receiver name must be 2-50 characters' });
+    }
+
+    if (!courierType || courierType.trim().length < 2 || courierType.trim().length > 50) {
+      return res.status(400).json({ message: 'Courier type must be 2-50 characters' });
+    }
+
+    // Tracking number is required
+    if (!trackingNumber || trackingNumber.trim().length < 3) {
+      return res.status(400).json({ message: 'Tracking number is required (minimum 3 characters)' });
+    }
+
+    // Check if tracking number already exists
+    const existing = await Courier.findOne({ where: { trackingNumber: trackingNumber.trim() } });
+    if (existing) {
+      return res.status(400).json({ message: 'Tracking number already exists' });
     }
 
     const courier = await Courier.create({
       senderName: senderName.trim(),
       receiverName: receiverName.trim(),
       courierType: courierType.trim(),
-      trackingNumber: trackingNumber ? trackingNumber.trim() : null,
+      trackingNumber: trackingNumber.trim(),
       remarks: remarks ? remarks.trim() : null,
+      status: status || 'Received',
       createdBy: req.user.id
     });
 
     res.status(201).json({ 
       message: 'Courier entry created successfully', 
-      courier,
+      data: courier,
       trackingNumber: courier.trackingNumber
     });
   } catch (error) {
@@ -85,12 +88,7 @@ exports.getAllCouriers = async (req, res) => {
 exports.updateCourier = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, deliveredDate, remarks } = req.body;
-
-    // Validate status
-    if (status && !['Received', 'Delivered'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status. Must be Received or Delivered' });
-    }
+    const { senderName, receiverName, courierType, status, deliveredDate, remarks } = req.body;
 
     const courier = await Courier.findByPk(id);
     
@@ -98,10 +96,42 @@ exports.updateCourier = async (req, res) => {
       return res.status(404).json({ message: 'Courier not found' });
     }
 
-    await courier.update({ status, deliveredDate, remarks });
+    // Prepare update data
+    const updateData = {};
 
-    res.json({ message: 'Courier updated successfully', courier });
+    // If updating courier details (not just status)
+    if (senderName || receiverName || courierType) {
+      const courierData = {
+        senderName: senderName || courier.senderName,
+        receiverName: receiverName || courier.receiverName,
+        courierType: courierType || courier.courierType,
+        status: status || courier.status
+      };
+      
+      const errors = validateCourierData(courierData);
+      if (errors.length > 0) {
+        return res.status(400).json({ message: errors.join(', ') });
+      }
+
+      if (senderName) updateData.senderName = senderName.trim();
+      if (receiverName) updateData.receiverName = receiverName.trim();
+      if (courierType) updateData.courierType = courierType.trim();
+    }
+
+    // Validate status if provided
+    if (status && !['Received', 'Delivered'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be Received or Delivered' });
+    }
+
+    if (status) updateData.status = status;
+    if (deliveredDate) updateData.deliveredDate = deliveredDate;
+    if (remarks !== undefined) updateData.remarks = remarks ? remarks.trim() : null;
+
+    await courier.update(updateData);
+
+    res.json({ message: 'Courier updated successfully', data: courier });
   } catch (error) {
+    console.error('Update courier error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

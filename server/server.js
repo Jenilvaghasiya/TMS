@@ -34,9 +34,15 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 const seedDatabase = require('./utils/seedDatabase');
 
-sequelize.sync({ alter: true })
-  .then(async () => {
-    console.log('Database connected and synced');
+async function startServer() {
+  try {
+    // Test database connection
+    await sequelize.authenticate();
+    console.log('Database connection established');
+    
+    // Sync database (create tables if they don't exist)
+    await sequelize.sync({ alter: false });
+    console.log('Database synced');
     
     // Seed database with initial data
     await seedDatabase();
@@ -45,7 +51,10 @@ sequelize.sync({ alter: true })
       console.log(`Server running on port ${PORT}`);
       console.log(`API available at http://localhost:${PORT}/api`);
     });
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('Database connection error:', err);
-  });
+    process.exit(1);
+  }
+}
+
+startServer();

@@ -5,10 +5,22 @@ exports.addTaskUpdate = async (req, res) => {
   try {
     const { taskId, comment, status, hoursWorked } = req.body;
 
-    // Validate input
-    const errors = validateTaskUpdateData(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ message: errors.join(', ') });
+    // Basic validation
+    if (!taskId || isNaN(taskId)) {
+      return res.status(400).json({ message: 'Valid task ID is required' });
+    }
+
+    if (!comment || !comment.trim() || comment.trim().length < 5) {
+      return res.status(400).json({ message: `Comment must be at least 5 characters long (current: ${comment ? comment.trim().length : 0})` });
+    }
+
+    if (!status || !['Pending', 'In-Progress', 'Completed'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be Pending, In-Progress, or Completed' });
+    }
+
+    const parsedHoursWorked = parseFloat(hoursWorked) || 0;
+    if (parsedHoursWorked < 0 || parsedHoursWorked > 24) {
+      return res.status(400).json({ message: 'Hours worked must be between 0 and 24' });
     }
 
     const task = await Task.findByPk(taskId);
@@ -26,11 +38,11 @@ exports.addTaskUpdate = async (req, res) => {
     })) : [];
 
     const update = await TaskUpdate.create({
-      taskId,
+      taskId: parseInt(taskId),
       userId: req.user.id,
-      comment,
+      comment: comment.trim(),
       status,
-      hoursWorked: hoursWorked || 0,
+      hoursWorked: parsedHoursWorked,
       attachments
     });
 

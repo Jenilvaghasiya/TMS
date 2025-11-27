@@ -88,7 +88,7 @@ CREATE DATABASE task_management;
 npm run dev
 ```
 
-The server will run on `http://localhost:5000` and automatically create database tables.
+The server will run on `https://tms-bj16.onrender.com` and automatically create database tables.
 
 ### Frontend Setup
 

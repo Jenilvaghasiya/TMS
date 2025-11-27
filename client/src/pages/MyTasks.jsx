@@ -46,10 +46,22 @@ const MyTasks = () => {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
+
+    // Client-side validation
+    if (!updateData.comment || updateData.comment.trim().length < 5) {
+      toast.error('Comment must be at least 5 characters long');
+      return;
+    }
+
+    if (updateData.hoursWorked < 0 || updateData.hoursWorked > 24) {
+      toast.error('Hours worked must be between 0 and 24');
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('taskId', selectedTask.id);
-      formData.append('comment', updateData.comment);
+      formData.append('comment', updateData.comment.trim());
       formData.append('status', updateData.status);
       formData.append('hoursWorked', updateData.hoursWorked);
       
@@ -63,7 +75,7 @@ const MyTasks = () => {
       setShowUpdateModal(false);
       setSelectedFiles([]);
     } catch (error) {
-      toast.error('Failed to update task');
+      toast.error(error.response?.data?.message || 'Failed to update task');
     }
   };
 
@@ -151,14 +163,20 @@ const MyTasks = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Work Log / Comment</label>
+                <label>Work Log / Comment (minimum 5 characters)</label>
                 <textarea
                   value={updateData.comment}
                   onChange={(e) => setUpdateData({ ...updateData, comment: e.target.value })}
                   rows="4"
-                  placeholder="Describe what you worked on..."
+                  placeholder="Describe what you worked on... (minimum 5 characters)"
                   required
+                  minLength={5}
                 />
+                {updateData.comment && updateData.comment.length < 5 && (
+                  <small style={{ color: '#ef4444', fontSize: '12px' }}>
+                    {5 - updateData.comment.length} more character{5 - updateData.comment.length !== 1 ? 's' : ''} required
+                  </small>
+                )}
               </div>
               <div className="form-group">
                 <label>Hours Worked</label>
