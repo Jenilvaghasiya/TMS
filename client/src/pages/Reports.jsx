@@ -21,8 +21,8 @@ const Reports = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const [dailyRes, weeklyRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/notifications/report-stats?period=daily', config),
-        axios.get('http://localhost:5000/api/notifications/report-stats?period=weekly', config)
+        axios.get('https://tms-bj16.onrender.com/api/notifications/report-stats?period=daily', config),
+        axios.get('https://tms-bj16.onrender.com/api/notifications/report-stats?period=weekly', config)
       ]);
 
       setDailyStats(dailyRes.data);
@@ -39,7 +39,7 @@ const Reports = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/notifications/daily-report',
+        'https://tms-bj16.onrender.com/api/notifications/daily-report',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -56,7 +56,7 @@ const Reports = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/notifications/weekly-report',
+        'https://tms-bj16.onrender.com/api/notifications/weekly-report',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
